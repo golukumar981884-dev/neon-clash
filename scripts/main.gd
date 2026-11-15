@@ -32,8 +32,8 @@ func _make_arena() -> void:
     plane.size = Vector2(24, 18)
     floor.mesh = plane
     var mat := StandardMaterial3D.new()
-    mat.albedo_color = Color(0.035, 0.055, 0.09)
-    mat.roughness = 0.72
+    mat.albedo_color = Color(0.055, 0.075, 0.11)
+    mat.roughness = 0.78
     floor.material_override = mat
     floor.position.y = -0.08
     add_child(floor)
@@ -73,38 +73,38 @@ func _make_lighting() -> void:
     env.background_mode = Environment.BG_COLOR
     env.background_color = Color(0.012, 0.022, 0.045)
     env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-    env.ambient_light_color = Color(0.48, 0.58, 0.78)
-    env.ambient_light_energy = 0.85
+    env.ambient_light_color = Color(0.58, 0.66, 0.82)
+    env.ambient_light_energy = 1.0
     env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
     world.environment = env
     add_child(world)
 
     var sun := DirectionalLight3D.new()
     sun.rotation_degrees = Vector3(-48, -28, 0)
-    sun.light_energy = 1.8
+    sun.light_energy = 2.0
     sun.shadow_enabled = true
     add_child(sun)
 
     var fill := OmniLight3D.new()
     fill.position = Vector3(0, 5, 3)
     fill.light_color = Color(0.2, 0.55, 1.0)
-    fill.light_energy = 2.0
+    fill.light_energy = 2.2
     fill.omni_range = 14.0
     add_child(fill)
 
 func _make_camera() -> void:
     var camera := Camera3D.new()
-    camera.position = Vector3(0, 9.0, 17.5)
-    camera.look_at(Vector3(0, 1.1, 0), Vector3.UP)
-    camera.fov = 54
+    camera.position = Vector3(0, 6.8, 13.2)
+    camera.look_at(Vector3(0, 1.15, 0), Vector3.UP)
+    camera.fov = 48
     add_child(camera)
     camera.current = true
 
 func _spawn_teams() -> void:
-    var a1 = _new_fighter("VOLT", Color(0.12, 0.58, 1.0), Vector3(-2.2, 0, 1.2))
-    var a2 = _new_fighter("BLAZE", Color(1.0, 0.35, 0.12), Vector3(-3.4, 0, 1.2))
-    var b1 = _new_fighter("SHADE", Color(0.75, 0.22, 0.95), Vector3(2.2, 0, -1.2))
-    var b2 = _new_fighter("TITAN", Color(0.95, 0.72, 0.12), Vector3(3.4, 0, -1.2))
+    var a1 = _new_fighter("VOLT", Color(0.12, 0.58, 1.0), Vector3(-2.2, 0, 0))
+    var a2 = _new_fighter("BLAZE", Color(1.0, 0.35, 0.12), Vector3(-3.2, 0, 0))
+    var b1 = _new_fighter("SHADE", Color(0.75, 0.22, 0.95), Vector3(2.2, 0, 0))
+    var b2 = _new_fighter("TITAN", Color(0.95, 0.72, 0.12), Vector3(3.2, 0, 0))
     team_a = [a1, a2]
     team_b = [b1, b2]
     a1.rotation.y = PI
@@ -138,32 +138,32 @@ func _make_hud() -> void:
     hud.add_child(ui)
 
     var title := Label.new()
-    title.text = "TAG FIGHTER 3D   |   PROTOTYPE"
-    title.anchor_left = 0.025
+    title.text = "TAG FIGHTER 3D  |  PROTOTYPE"
+    title.anchor_left = 0.035
     title.anchor_top = 0.025
     title.add_theme_font_size_override("font_size", 22)
-    title.add_theme_color_override("font_color", Color(0.78, 0.91, 1))
+    title.add_theme_color_override("font_color", Color(0.82, 0.93, 1))
     ui.add_child(title)
 
-    health_a = _bar(0.025, 0.09, 0.32, Color(0.1, 0.65, 1))
-    health_b = _bar(0.655, 0.09, 0.32, Color(1, 0.3, 0.18))
-    power_a = _bar(0.025, 0.135, 0.20, Color(0.15, 0.95, 0.75))
+    health_a = _bar(0.035, 0.085, 0.34, Color(0.1, 0.65, 1))
+    health_b = _bar(0.625, 0.085, 0.34, Color(1, 0.3, 0.18))
+    power_a = _bar(0.035, 0.132, 0.21, Color(0.15, 0.95, 0.75))
 
     status_label = Label.new()
-    status_label.anchor_left = 0.42
-    status_label.anchor_top = 0.095
-    status_label.anchor_right = 0.58
+    status_label.anchor_left = 0.39
+    status_label.anchor_top = 0.085
+    status_label.anchor_right = 0.61
     status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     status_label.add_theme_font_size_override("font_size", 18)
     status_label.add_theme_color_override("font_color", Color.WHITE)
     ui.add_child(status_label)
 
-    _add_button("TAG", 0.025, 0.76, 0.09, 0.105, "tag")
-    _add_button("◀", 0.13, 0.84, 0.09, 0.105, "left")
-    _add_button("▶", 0.23, 0.84, 0.09, 0.105, "right")
-    _add_button("PUNCH", 0.79, 0.76, 0.09, 0.105, "punch")
-    _add_button("KICK", 0.895, 0.66, 0.09, 0.105, "kick")
-    _add_button("SPECIAL", 0.895, 0.84, 0.09, 0.105, "special")
+    _add_button("TAG", 0.035, 0.72, 0.105, 0.11, "tag")
+    _add_button("MOVE ◀", 0.035, 0.85, 0.13, 0.11, "left")
+    _add_button("MOVE ▶", 0.18, 0.85, 0.13, 0.11, "right")
+    _add_button("PUNCH", 0.79, 0.79, 0.105, 0.11, "punch")
+    _add_button("KICK", 0.875, 0.66, 0.105, 0.11, "kick")
+    _add_button("SPECIAL", 0.875, 0.85, 0.105, 0.11, "special")
 
 func _bar(anchor_x: float, anchor_y: float, width: float, color: Color) -> ProgressBar:
     var bar := ProgressBar.new()
@@ -194,7 +194,7 @@ func _add_button(label: String, x: float, y: float, w: float, h: float, action: 
     button.anchor_top = y
     button.anchor_right = x + w
     button.anchor_bottom = y + h
-    button.add_theme_font_size_override("font_size", 18)
+    button.add_theme_font_size_override("font_size", 17)
     button.add_theme_color_override("font_color", Color.WHITE)
     button.button_down.connect(_on_button_down.bind(action))
     button.button_up.connect(_on_button_up.bind(action))
@@ -232,6 +232,7 @@ func _tag_switch() -> void:
     team_a[active_a].visible = false
     team_a[active_a].is_active = false
     active_a = 1 - active_a
+    team_a[active_a].position = Vector3(maxf(-3.6, team_a[1 - active_a].position.x - 0.8), 0, 0)
     team_a[active_a].visible = true
     team_a[active_a].is_active = true
     _connect_opponents()
@@ -242,28 +243,32 @@ func _process(delta: float) -> void:
         return
     var player = team_a[active_a]
     if held_left:
-        player.position.x = maxf(-4.5, player.position.x - 3.2 * delta)
+        player.position.x = maxf(-4.5, player.position.x - 4.0 * delta)
     if held_right:
-        player.position.x = minf(0.2, player.position.x + 3.2 * delta)
+        player.position.x = minf(0.8, player.position.x + 4.0 * delta)
 
-    ai_timer -= delta
     var enemy = team_b[active_b]
-    if ai_timer <= 0.0 and enemy.health > 0.0:
-        ai_timer = 0.75
-        var distance = enemy.global_position.distance_to(player.global_position)
-        if distance > 2.35:
-            enemy.position.x = move_toward(enemy.position.x, player.position.x + 1.15, 0.8)
-        else:
-            enemy.attack(7.0)
+    ai_timer -= delta
+    var dx: float = player.global_position.x - enemy.global_position.x
+    enemy.rotation.y = PI if dx > 0.0 else 0.0
+    if absf(dx) > 1.8:
+        enemy.position.x = move_toward(enemy.position.x, player.position.x + (1.25 if dx > 0.0 else -1.25), 2.2 * delta)
+    elif ai_timer <= 0.0:
+        ai_timer = 0.85
+        enemy.attack(9.0)
+
     _refresh_hud()
     if team_b[active_b].health <= 0.0:
         team_b[active_b].visible = false
+        team_b[active_b].is_active = false
         active_b = 1 - active_b
         if team_b[active_b].health <= 0.0:
             match_over = true
             status_label.text = "YOU WIN!"
         else:
+            team_b[active_b].position = Vector3(2.8, 0, 0)
             team_b[active_b].visible = true
+            team_b[active_b].is_active = true
             _connect_opponents()
             status_label.text = "OPPONENT TAG!"
     if team_a[active_a].health <= 0.0:
