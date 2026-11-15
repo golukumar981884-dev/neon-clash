@@ -19,6 +19,8 @@ func _build_body() -> void:
     mat.albedo_color = team_color
     mat.metallic = 0.18
     mat.roughness = 0.34
+    mat.emission_enabled = true
+    mat.emission = team_color * 0.12
 
     var body := MeshInstance3D.new()
     var capsule := CapsuleMesh.new()
@@ -70,15 +72,19 @@ func attack(amount: float) -> bool:
         return false
     attack_cooldown = 0.42
     if is_instance_valid(opponent) and opponent.has_method("take_hit"):
-        opponent.take_hit(amount)
-        power = minf(100.0, power + 8.0)
-    return true
+        if global_position.distance_to(opponent.global_position) <= 3.0:
+            opponent.take_hit(amount)
+            power = minf(100.0, power + 8.0)
+            return true
+    return false
 
 func special_attack() -> bool:
-    if power < 35.0 or attack_cooldown > 0.0:
+    if power < 35.0 or attack_cooldown > 0.0 or health <= 0.0:
+        return false
+    if not is_instance_valid(opponent) or global_position.distance_to(opponent.global_position) > 3.5:
         return false
     power -= 35.0
     attack_cooldown = 0.9
-    if is_instance_valid(opponent) and opponent.has_method("take_hit"):
+    if opponent.has_method("take_hit"):
         opponent.take_hit(24.0)
     return true
