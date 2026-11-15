@@ -31,9 +31,13 @@ jobs:
           yes | "$SDK_PATH/cmdline-tools/cmdline-tools/bin/sdkmanager" --sdk_root="$SDK_PATH" --licenses || true
           "$SDK_PATH/cmdline-tools/cmdline-tools/bin/sdkmanager" --sdk_root="$SDK_PATH" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
-      - name: Install matching Godot Android export templates
+      - name: Install curl and matching Godot Android export templates
         shell: bash
         run: |
+          if ! command -v curl >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y curl
+          fi
           mkdir -p /tmp/godot-templates "$HOME/.local/share/godot/export_templates/4.4.1.stable"
           curl -L --fail --retry 3 "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz" -o /tmp/godot-templates/templates.tpz
           unzip -q /tmp/godot-templates/templates.tpz -d /tmp/godot-templates
