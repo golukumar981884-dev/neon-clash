@@ -94,16 +94,16 @@ func _make_lighting() -> void:
 
 func _make_camera() -> void:
     var camera := Camera3D.new()
-    camera.position = Vector3(0, 6.8, 13.2)
-    camera.look_at(Vector3(0, 1.15, 0), Vector3.UP)
-    camera.fov = 48
+    camera.position = Vector3(0, 4.8, 12.5)
+    camera.look_at(Vector3(0, 0.35, 0), Vector3.UP)
+    camera.fov = 42
     add_child(camera)
     camera.current = true
 
 func _spawn_teams() -> void:
-    var a1 = _new_fighter("VOLT", Color(0.12, 0.58, 1.0), Vector3(-2.2, 0, 0))
+    var a1 = _new_fighter("VOLT", Color(0.12, 0.58, 1.0), Vector3(-1.65, 0, 0))
     var a2 = _new_fighter("BLAZE", Color(1.0, 0.35, 0.12), Vector3(-3.2, 0, 0))
-    var b1 = _new_fighter("SHADE", Color(0.75, 0.22, 0.95), Vector3(2.2, 0, 0))
+    var b1 = _new_fighter("SHADE", Color(0.75, 0.22, 0.95), Vector3(1.65, 0, 0))
     var b2 = _new_fighter("TITAN", Color(0.95, 0.72, 0.12), Vector3(3.2, 0, 0))
     team_a = [a1, a2]
     team_b = [b1, b2]
@@ -196,6 +196,9 @@ func _add_button(label: String, x: float, y: float, w: float, h: float, action: 
     button.anchor_bottom = y + h
     button.add_theme_font_size_override("font_size", 17)
     button.add_theme_color_override("font_color", Color.WHITE)
+    button.focus_mode = Control.FOCUS_NONE
+    button.mouse_filter = Control.MOUSE_FILTER_STOP
+    button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
     button.button_down.connect(_on_button_down.bind(action))
     button.button_up.connect(_on_button_up.bind(action))
     button.pressed.connect(_on_action.bind(action))
@@ -219,13 +222,26 @@ func _on_action(action: String) -> void:
     var fighter = team_a[active_a]
     match action:
         "punch":
-            fighter.attack(8.0)
+            if fighter.attack(8.0):
+                status_label.text = "PUNCH HIT!"
+            else:
+                status_label.text = "PUNCH - MOVE CLOSER"
         "kick":
-            fighter.attack(13.0)
+            if fighter.attack(13.0):
+                status_label.text = "KICK HIT!"
+            else:
+                status_label.text = "KICK - MOVE CLOSER"
         "special":
-            fighter.special_attack()
+            if fighter.special_attack():
+                status_label.text = "SPECIAL HIT!"
+            else:
+                status_label.text = "SPECIAL NEEDS 20 POWER"
         "tag":
             _tag_switch()
+        "left":
+            player.position.x = maxf(-4.5, player.position.x - 0.65)
+        "right":
+            player.position.x = minf(0.8, player.position.x + 0.65)
     _refresh_hud()
 
 func _tag_switch() -> void:
@@ -251,11 +267,11 @@ func _process(delta: float) -> void:
     ai_timer -= delta
     var dx: float = player.global_position.x - enemy.global_position.x
     enemy.rotation.y = PI if dx > 0.0 else 0.0
-    if absf(dx) > 1.8:
-        enemy.position.x = move_toward(enemy.position.x, player.position.x + (1.25 if dx > 0.0 else -1.25), 2.2 * delta)
-    elif ai_timer <= 0.0:
-        ai_timer = 0.85
-        enemy.attack(9.0)
+    if absf(dx) > 1.35:
+        enemy.position.x = move_toward(enemy.position.x, player.position.x + (0.95 if dx > 0.0 else -0.95), 3.0 * delta)
+    if ai_timer <= 0.0 and absf(dx) <= 5.2:
+        ai_timer = 0.62
+        enemy.attack(10.0)
 
     _refresh_hud()
     if team_b[active_b].health <= 0.0:
