@@ -1,7 +1,6 @@
 extends Node3D
 
 const FighterScript = preload("res://scripts/fighter.gd")
-
 var team_a: Array = []
 var team_b: Array = []
 var active_a := 0
@@ -12,8 +11,6 @@ var health_a: ProgressBar
 var health_b: ProgressBar
 var power_a: ProgressBar
 var status_label: Label
-var held_left := false
-var held_right := false
 var ai_timer := 0.0
 var match_over := false
 
@@ -94,9 +91,9 @@ func _make_lighting() -> void:
 
 func _make_camera() -> void:
     var camera := Camera3D.new()
-    camera.position = Vector3(0, 4.8, 12.5)
-    camera.look_at(Vector3(0, 0.35, 0), Vector3.UP)
-    camera.fov = 42
+    camera.position = Vector3(0, 11.5, 14.0)
+    camera.look_at(Vector3(0, 0.8, 0), Vector3.UP)
+    camera.fov = 58.0
     add_child(camera)
     camera.current = true
 
@@ -159,8 +156,8 @@ func _make_hud() -> void:
     ui.add_child(status_label)
 
     _add_button("TAG", 0.035, 0.72, 0.105, 0.11, "tag")
-    _add_button("MOVE ◀", 0.035, 0.85, 0.13, 0.11, "left")
-    _add_button("MOVE ▶", 0.18, 0.85, 0.13, 0.11, "right")
+    _add_button("◀ LEFT", 0.035, 0.85, 0.13, 0.11, "left")
+    _add_button("RIGHT ▶", 0.18, 0.85, 0.13, 0.11, "right")
     _add_button("PUNCH", 0.79, 0.79, 0.105, 0.11, "punch")
     _add_button("KICK", 0.875, 0.66, 0.105, 0.11, "kick")
     _add_button("SPECIAL", 0.875, 0.85, 0.105, 0.11, "special")
@@ -199,22 +196,8 @@ func _add_button(label: String, x: float, y: float, w: float, h: float, action: 
     button.focus_mode = Control.FOCUS_NONE
     button.mouse_filter = Control.MOUSE_FILTER_STOP
     button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
-    button.button_down.connect(_on_button_down.bind(action))
-    button.button_up.connect(_on_button_up.bind(action))
     button.pressed.connect(_on_action.bind(action))
     ui.add_child(button)
-
-func _on_button_down(action: String) -> void:
-    if action == "left":
-        held_left = true
-    elif action == "right":
-        held_right = true
-
-func _on_button_up(action: String) -> void:
-    if action == "left":
-        held_left = false
-    elif action == "right":
-        held_right = false
 
 func _on_action(action: String) -> void:
     if match_over:
@@ -222,26 +205,19 @@ func _on_action(action: String) -> void:
     var fighter = team_a[active_a]
     match action:
         "punch":
-            if fighter.attack(8.0):
-                status_label.text = "PUNCH HIT!"
-            else:
-                status_label.text = "PUNCH - MOVE CLOSER"
+            status_label.text = "PUNCH HIT!" if fighter.attack(8.0) else "PUNCH - MOVE CLOSER"
         "kick":
-            if fighter.attack(13.0):
-                status_label.text = "KICK HIT!"
-            else:
-                status_label.text = "KICK - MOVE CLOSER"
+            status_label.text = "KICK HIT!" if fighter.attack(14.0) else "KICK - MOVE CLOSER"
         "special":
-            if fighter.special_attack():
-                status_label.text = "SPECIAL HIT!"
-            else:
-                status_label.text = "SPECIAL NEEDS 20 POWER"
+            status_label.text = "SPECIAL HIT!" if fighter.special_attack() else "SPECIAL NEEDS 20 POWER"
         "tag":
             _tag_switch()
         "left":
-            player.position.x = maxf(-4.5, player.position.x - 0.65)
+            fighter.position.x = maxf(-4.5, fighter.position.x - 0.8)
+            status_label.text = "MOVE LEFT"
         "right":
-            player.position.x = minf(0.8, player.position.x + 0.65)
+            fighter.position.x = minf(0.8, fighter.position.x + 0.8)
+            status_label.text = "MOVE RIGHT"
     _refresh_hud()
 
 func _tag_switch() -> void:
@@ -258,20 +234,18 @@ func _process(delta: float) -> void:
     if match_over:
         return
     var player = team_a[active_a]
-    if held_left:
-        player.position.x = maxf(-4.5, player.position.x - 4.0 * delta)
-    if held_right:
-        player.position.x = minf(0.8, player.position.x + 4.0 * delta)
-
     var enemy = team_b[active_b]
-    ai_timer -= delta
     var dx: float = player.global_position.x - enemy.global_position.x
     enemy.rotation.y = PI if dx > 0.0 else 0.0
-    if absf(dx) > 1.35:
-        enemy.position.x = move_toward(enemy.position.x, player.position.x + (0.95 if dx > 0.0 else -0.95), 3.0 * delta)
-    if ai_timer <= 0.0 and absf(dx) <= 5.2:
-        ai_timer = 0.62
-        enemy.attack(10.0)
+
+    if absf(dx) > 1.55:
+        enemy.position.x = move_toward(enemy.position.x, player.position.x + (1.15 if dx > 0.0 else -1.15), 3.2 * delta)
+
+    ai_timer -= delta
+    if ai_timer <= 0.0 and absf(dx) <= 3.25:
+        ai_timer = 0.65
+        if enemy.attack(10.0):
+            status_label.text = "ENEMY HIT YOU!"
 
     _refresh_hud()
     if team_b[active_b].health <= 0.0:
