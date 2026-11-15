@@ -14,17 +14,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure Android SDK for Godot
+      - name: Configure Android SDK and Java for Godot
         shell: bash
         run: |
-          echo "ANDROID_HOME=${ANDROID_HOME:-${ANDROID_SDK_ROOT}}" >> "$GITHUB_ENV"
+          SDK_PATH="${ANDROID_HOME:-${ANDROID_SDK_ROOT}}"
+          JAVA_PATH="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          echo "ANDROID_HOME=$SDK_PATH" >> "$GITHUB_ENV"
+          echo "JAVA_HOME=$JAVA_PATH" >> "$GITHUB_ENV"
           mkdir -p "$HOME/.config/godot"
           cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
           [gd_resource type="EditorSettings" format=3]
           [resource]
-          export/android/android_sdk_path = "${ANDROID_HOME:-${ANDROID_SDK_ROOT}}"
-          export/android/java_sdk_path = "${JAVA_HOME}"
+          export/android/android_sdk_path = "$SDK_PATH"
+          export/android/java_sdk_path = "$JAVA_PATH"
           EOF
+          yes | "$SDK_PATH/cmdline-tools/cmdline-tools/bin/sdkmanager" --sdk_root="$SDK_PATH" --licenses || true
+          "$SDK_PATH/cmdline-tools/cmdline-tools/bin/sdkmanager" --sdk_root="$SDK_PATH" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - name: Install matching Godot Android export templates
+        shell: bash
+        run: |
+          mkdir -p /tmp/godot-templates "$HOME/.local/share/godot/export_templates/4.4.1.stable"
+          curl -L --fail --retry 3 "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz" -o /tmp/godot-templates/templates.tpz
+          unzip -q /tmp/godot-templates/templates.tpz -d /tmp/godot-templates
+          cp /tmp/godot-templates/templates/* "$HOME/.local/share/godot/export_templates/4.4.1.stable/"
 
       - name: Create temporary debug keystore
         shell: bash
